@@ -801,7 +801,7 @@ https://iesextmail1.fnp.gov.tw/
                 bodyLines.push('*** OK - VALID CERTIFICATES ***');
                 bodyLines.push('');
                 oks.forEach(cert => {
-                    bodyLines.push(` - Valid for ${cert.daysRemaining} days`);
+                    bodyLines.push(` ${cert.url} - Valid for ${cert.daysRemaining} days`);
                 });
                 bodyLines.push('');
             }
@@ -862,6 +862,7 @@ https://iesextmail1.fnp.gov.tw/
     </script>
 </body>
 </html>
+
 
 
 
