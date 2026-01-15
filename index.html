@@ -747,7 +747,7 @@ https://iesextmail1.fnp.gov.tw/</textarea>
                 <h3>📝 執行日誌</h3>
                 <div id="logContainer">
                     <div class="log-entry info">
-                        <div class="log-timestamp">2024-01-15 14:30:00</div>
+                        <div class="log-timestamp">2025-01-15 14:30:00</div>
                         <div class="log-content">系統已準備就緒，等待開始檢查...</div>
                     </div>
                 </div>
@@ -759,7 +759,7 @@ https://iesextmail1.fnp.gov.tw/</textarea>
         </div>
         
         <div class="footer">
-            <p>© 2024 SSL 憑證檢查系統 | 建議使用 PowerShell 版本進行實際檢查</p>
+            <p>© 2025 SSL 憑證檢查系統 | 建議使用 PowerShell 版本進行實際檢查</p>
             <p>線上工具僅供參考，實際部署請使用 PowerShell 腳本</p>
         </div>
     </div>
@@ -1399,13 +1399,32 @@ Write-Host ""`;
             }, 2000);
         }
 
-        // 模擬 SSL 檢查
+        // 修正後的模擬 SSL 檢查
         function simulateSSLCheck(websites, warningDays) {
             const results = [];
+            const currentDate = new Date();
+            
+            // 預設的測試場景，讓結果更真實且符合當前年份
+            const testScenarios = [
+                { daysRemaining: -1, description: "已過期" },      // 第一個：已過期
+                { daysRemaining: 15, description: "即將過期" },     // 第二個：即將過期
+                { daysRemaining: 25, description: "需要關注" },     // 第三個：需要關注
+                { daysRemaining: 45, description: "需要關注" },     // 第四個：需要關注
+                { daysRemaining: 85, description: "正常" },        // 第五個：正常
+                { daysRemaining: 120, description: "正常" }        // 第六個：正常
+            ];
             
             websites.forEach((url, index) => {
-                // 模擬不同的憑證狀態
-                const daysRemaining = Math.floor(Math.random() * 200) - 10; // -10 到 190 天
+                let daysRemaining;
+                
+                // 使用預設場景，如果超出則生成合理的隨機值
+                if (index < testScenarios.length) {
+                    daysRemaining = testScenarios[index].daysRemaining;
+                } else {
+                    // 為額外的網站生成合理的隨機值 (10-160 天)
+                    daysRemaining = Math.floor(Math.random() * 150) + 10;
+                }
+                
                 let status, statusClass;
                 
                 if (daysRemaining < 0) {
@@ -1419,12 +1438,16 @@ Write-Host ""`;
                     statusClass = 'ok';
                 }
                 
+                // 計算正確的到期日期（基於當前日期 + 剩餘天數）
+                const expiryDate = new Date(currentDate);
+                expiryDate.setDate(expiryDate.getDate() + daysRemaining);
+                
                 const result = {
                     url: url,
                     status: status,
                     statusClass: statusClass,
                     daysRemaining: daysRemaining,
-                    expiryDate: new Date(Date.now() + daysRemaining * 24 * 60 * 60 * 1000).toLocaleDateString('zh-TW'),
+                    expiryDate: expiryDate.toLocaleDateString('zh-TW'),
                     issuer: 'Let\'s Encrypt Authority X3',
                     subject: `CN=${new URL(url).hostname}`
                 };
