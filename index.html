@@ -1,393 +1,190 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SSL 憑證檢查系統</title>
+    <title>SSL 憑證檢查工具</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            font-family: 'Segoe UI', 'Microsoft JhengHei', Arial, sans-serif;
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 20px;
+            color: #333;
         }
-        
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .card {
             background: white;
             border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
             padding: 40px;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .download-section {
             text-align: center;
+            margin: 40px 0;
         }
-        
-        .header h1 {
-            font-size: 36px;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-        }
-        
-        .header p {
-            opacity: 0.9;
-            font-size: 16px;
-        }
-        
-        .content {
-            padding: 40px;
-        }
-        
-        .input-section {
-            background: #f8f9fa;
-            padding: 30px;
-            border-radius: 15px;
-            margin-bottom: 30px;
-            border: 2px solid #e0e0e0;
-        }
-        
-        .input-section h2 {
-            color: #333;
-            margin-bottom: 20px;
-            font-size: 24px;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #555;
-            font-weight: 600;
-        }
-        
-        .form-group input,
-        .form-group textarea {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
-        
-        .form-group input:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-        
-        .form-group textarea {
-            resize: vertical;
-            min-height: 120px;
-            font-family: 'Courier New', monospace;
-        }
-        
-        .form-group small {
-            display: block;
-            margin-top: 5px;
-            color: #666;
-            font-size: 12px;
-        }
-        
-        .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 15px 40px;
-            font-size: 18px;
-            border-radius: 30px;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-            font-weight: 600;
-        }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
-        }
-        
-        .btn:active {
-            transform: translateY(0);
-        }
-        
-        .btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
-        }
-        
-        .btn-secondary {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            margin-left: 10px;
-        }
-        
-        .results-section {
-            display: none;
-            margin-top: 30px;
-        }
-        
-        .summary {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .summary-card {
-            padding: 25px;
-            border-radius: 15px;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            transition: transform 0.3s;
-        }
-        
-        .summary-card:hover {
-            transform: translateY(-5px);
-        }
-        
-        .summary-card h3 {
-            font-size: 48px;
-            margin-bottom: 10px;
-        }
-        
-        .summary-card p {
-            color: #666;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .card-expired {
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
-            color: white;
-        }
-        
-        .card-expired p {
-            color: rgba(255,255,255,0.9);
-        }
-        
-        .card-warning {
-            background: linear-gradient(135deg, #feca57 0%, #ff9ff3 100%);
-            color: white;
-        }
-        
-        .card-warning p {
-            color: rgba(255,255,255,0.9);
-        }
-        
-        .card-ok {
-            background: linear-gradient(135deg, #48dbfb 0%, #0abde3 100%);
-            color: white;
-        }
-        
-        .card-ok p {
-            color: rgba(255,255,255,0.9);
-        }
-        
-        .results-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        
-        .results-table thead {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        
-        .results-table th {
-            padding: 15px;
-            text-align: left;
-            font-weight: 600;
-        }
-        
-        .results-table td {
-            padding: 12px 15px;
-            border-bottom: 1px solid #e0e0e0;
-        }
-        
-        .results-table tr:hover {
-            background-color: #f8f9fa;
-        }
-        
-        .status-badge {
+
+        .download-btn {
             display: inline-block;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-        
-        .badge-expired {
-            background-color: #ff4757;
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
             color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            margin: 10px 10px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            min-width: 200px;
         }
-        
-        .badge-warning {
-            background-color: #ffa502;
-            color: white;
+
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
         }
-        
-        .badge-ok {
-            background-color: #26de81;
-            color: white;
+
+        .download-btn.secondary {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
         }
-        
-        .badge-error {
-            background-color: #a4b0be;
-            color: white;
+
+        .download-btn.secondary:hover {
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
         }
-        
-        .badge-future {
-            background-color: #5f27cd;
-            color: white;
+
+        .download-btn.tertiary {
+            background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
         }
-        
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 40px;
+
+        .download-btn.tertiary:hover {
+            box-shadow: 0 6px 20px rgba(255, 152, 0, 0.4);
         }
-        
-        .loading.active {
-            display: block;
-        }
-        
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
+
         .alert {
-            padding: 15px 20px;
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
             border-radius: 10px;
-            margin-bottom: 20px;
-            display: none;
+            margin: 20px 0;
         }
-        
-        .alert.show {
-            display: block;
-        }
-        
-        .alert-success {
-            background-color: #d4edda;
+
+        .success {
+            background: #d4edda;
             border: 1px solid #c3e6cb;
             color: #155724;
         }
-        
-        .alert-error {
-            background-color: #f8d7da;
-            border: 1px solid #f5c6cb;
-            color: #721c24;
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 40px 0;
         }
-        
-        .alert-info {
-            background-color: #d1ecf1;
-            border: 1px solid #bee5eb;
-            color: #0c5460;
-        }
-        
-        .alert-warning {
-            background-color: #fff3cd;
-            border: 1px solid #ffc107;
-            color: #856404;
-        }
-        
-        .email-section {
-            background: #fff3cd;
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 20px;
-            border: 2px solid #ffc107;
-            display: none;
-        }
-        
-        .email-section.show {
-            display: block;
-        }
-        
-        .email-section h3 {
-            color: #856404;
-            margin-bottom: 15px;
-        }
-        
-        .email-content {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            white-space: pre-wrap;
-            max-height: 300px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-        }
-        
-        .footer {
+
+        .feature {
             background: #f8f9fa;
-            padding: 30px;
+            padding: 20px;
+            border-radius: 15px;
             text-align: center;
-            color: #666;
-            border-top: 2px solid #e0e0e0;
         }
-        
-        .footer p {
-            margin: 5px 0;
-            font-size: 14px;
+
+        .feature h3 {
+            color: #4caf50;
+            margin-bottom: 10px;
         }
-        
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: none;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: black;
+        }
+
+        textarea {
+            width: 100%;
+            height: 400px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            resize: vertical;
+        }
+
         @media (max-width: 768px) {
             .header h1 {
-                font-size: 24px;
+                font-size: 2em;
             }
             
-            .content {
+            .card {
                 padding: 20px;
             }
             
-            .summary {
-                grid-template-columns: 1fr;
-            }
-            
-            .results-table {
-                font-size: 12px;
-            }
-            
-            .results-table th,
-            .results-table td {
-                padding: 8px;
+            .download-btn {
+                display: block;
+                margin: 10px auto;
+                width: 90%;
             }
         }
     </style>
@@ -395,65 +192,75 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>
-                <span>🔒</span>
-                SSL 憑證檢查系統
-            </h1>
-            <p>即時檢查網站 SSL 憑證有效期限</p>
+            <h1>🔒 SSL 憑證檢查工具</h1>
+            <p>自動化監控網站 SSL 憑證有效期限</p>
         </div>
-        
-        <div class="content">
-            <div class="alert alert-warning show" id="browserWarning">
-                ⚠️ <strong>注意：</strong>由於瀏覽器安全限制，無法直接取得真實的 SSL 憑證資訊。<br>
-                請使用 PowerShell 版本進行實際檢查，或參考下方說明使用線上工具。
+
+        <div class="card">
+            <div id="status-message" class="alert" style="display: none;"></div>
+            
+            <div class="download-section">
+                <h2 style="text-align: center; margin-bottom: 30px; color: #333;">📥 下載 PowerShell 腳本</h2>
+                
+                <button onclick="downloadPowerShellScript()" class="download-btn">
+                    📥 下載 PowerShell 腳本
+                </button>
+                <button onclick="copyScriptContent()" class="download-btn secondary">
+                    📋 複製腳本內容
+                </button>
+                <button onclick="openScriptModal()" class="download-btn tertiary">
+                    👁️ 檢視腳本內容
+                </button>
             </div>
-            
-            <div class="alert alert-info" id="alertBox"></div>
-            
-            <div class="input-section">
-                <h2>📋 設定檢查項目</h2>
-                
-                <div class="form-group">
-                    <label for="websites">網站清單 (每行一個網址)</label>
-                    <textarea id="websites" placeholder="https://example.com&#10;https://www.google.com&#10;https://www.microsoft.com">https://esvc.fnp.gov.tw/
-https://www.fnp.gov.tw/
-https://webjop.fnp.gov.tw/
-https://pts.fnp.gov.tw/APNPA/
-https://pms.fnp.gov.tw/
-https://iesextmail1.fnp.gov.tw/
-                    </textarea>
-                    <small>請輸入完整的 HTTPS 網址，每行一個</small>
+
+            <div class="features">
+                <div class="feature">
+                    <h3>🔍 批量檢查</h3>
+                    <p>同時檢查多個網站的 SSL 憑證狀態</p>
                 </div>
-                
-                <div class="form-group">
-                    <label for="warningDays">警告天數</label>
-                    <input type="number" id="warningDays" value="60" min="1" max="365">
-                    <small>當憑證剩餘天數少於此值時會發出警告</small>
+                <div class="feature">
+                    <h3>📧 自動通知</h3>
+                    <p>透過 Outlook 自動發送警告郵件</p>
                 </div>
-                
-                <div class="form-group">
-                    <label for="emailRecipient">通知信箱</label>
-                    <input type="email" id="emailRecipient"  placeholder="your@email.com">
-                    <small>當有憑證過期或即將過期時，會準備郵件通知</small>
+                <div class="feature">
+                    <h3>📊 詳細報告</h3>
+                    <p>產生 CSV 格式的詳細檢查報告</p>
                 </div>
-                
-                <div style="text-align: center; margin-top: 30px;">
-                    <button class="btn" onclick="startCheck()">
-                        🔍 開始檢查 (示範模式)
-                    </button>
-                    <button class="btn btn-secondary" onclick="resetForm()">
-                        🔄 重設
-                    </button>
+                <div class="feature">
+                    <h3>⚙️ 易於設定</h3>
+                    <p>簡單修改設定即可客製化使用</p>
                 </div>
-                
-                <div style="margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 8px; border-left: 4px solid #2196F3;">
-                    <h4 style="color: #1976D2; margin-bottom: 10px;">💡 如何取得真實憑證資訊？</h4>
-                    <p style="color: #555; font-size: 14px; line-height: 1.6;">
-                        <strong>方法 1：使用 PowerShell 腳本</strong><br>
-                        執行隨附的 PowerShell 腳本可取得真實憑證資訊<br>
-                         // 修正版本的下載功能
-function downloadPowerShellScript() {
-    const scriptContent = `# SSL Certificate Check Script
+            </div>
+
+            <div class="alert">
+                <strong>使用說明：</strong>
+                <ol style="margin-top: 10px; padding-left: 20px;">
+                    <li>下載 PowerShell 腳本檔案</li>
+                    <li>修改腳本中的網站清單和郵件設定</li>
+                    <li>以管理員身分執行 PowerShell</li>
+                    <li>執行指令：<code>Set-ExecutionPolicy RemoteSigned -Scope CurrentUser</code></li>
+                    <li>執行腳本：<code>.\Check-SSLCertificates.ps1</code></li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <!-- 腳本內容模態框 -->
+    <div id="scriptModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeScriptModal()">&times;</span>
+            <h2>PowerShell 腳本內容</h2>
+            <p>您可以複製以下內容並儲存為 <code>Check-SSLCertificates.ps1</code> 檔案：</p>
+            <textarea id="scriptTextarea" readonly></textarea>
+            <div style="text-align: center; margin-top: 15px;">
+                <button onclick="copyFromTextarea()" class="download-btn secondary">📋 複製全部內容</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // PowerShell 腳本內容
+        const scriptContent = `# SSL Certificate Check Script
 # ==================== Configuration ====================
 
 $websiteList = @(
@@ -471,7 +278,7 @@ $warningDays = 60
 if ($PSScriptRoot) {
     $workingDir = $PSScriptRoot
 } else {
-    $workingDir = "D:\\chkCRT"
+    $workingDir = "D:\\\\chkCRT"
     if (-not (Test-Path $workingDir)) {
         New-Item -ItemType Directory -Path $workingDir -Force | Out-Null
     }
@@ -764,7 +571,7 @@ if ($needsAlert.Count -gt 0) {
     $bodyLines += "This is an automated message."
     $bodyLines += "========================================"
     
-    $body = $bodyLines -join "\`n"
+    $body = $bodyLines -join "\\n"
     
     Write-Host ""
     Write-Host "Attempting to send email notification..." -ForegroundColor Yellow
@@ -825,481 +632,144 @@ Write-Host "Script completed successfully!" -ForegroundColor Green
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""`;
 
-    try {
-        // 使用 Blob 方式創建檔案
-        const blob = new Blob([scriptContent], { 
-            type: 'text/plain;charset=utf-8' 
-        });
-        
-        // 創建下載連結
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'Check-SSLCertificates.ps1';
-        
-        // 觸發下載
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        // 清理 URL
-        window.URL.revokeObjectURL(url);
-        
-        console.log('PowerShell script downloaded successfully');
-        
-    } catch (error) {
-        console.error('Download failed:', error);
-        
-        // 備用方案：顯示內容讓用戶複製
-        const newWindow = window.open('', '_blank');
-        newWindow.document.write(`
-            <html>
-            <head>
-                <title>PowerShell Script - 請複製內容</title>
-                <style>
-                    body { font-family: monospace; margin: 20px; }
-                    textarea { width: 100%; height: 80vh; font-family: monospace; }
-                    .header { background: #f0f0f0; padding: 10px; margin-bottom: 10px; }
-                </style>
-            </head>
-            <body>
-                <div class="header">
-                    <h3>下載失敗 - 請複製以下內容並儲存為 Check-SSLCertificates.ps1</h3>
-                    <p>請選擇全部內容 (Ctrl+A) 然後複製 (Ctrl+C)</p>
-                </div>
-                <textarea readonly>${scriptContent}</textarea>
-            </body>
-            </html>
-        `);
-    }
-}
-
-                        <br>
-                        <strong>方法 2：使用線上工具</strong><br>
-                        • <a href="https://www.ssllabs.com/ssltest/" target="_blank">SSL Labs</a><br>
-                        • <a href="https://www.sslshopper.com/ssl-checker.html" target="_blank">SSL Shopper</a>
-                    </p>
-                </div>
-            </div>
+        // 顯示狀態訊息的函數
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status-message');
+            statusDiv.textContent = message;
+            statusDiv.className = type === 'success' ? 'alert success' : 'alert';
+            statusDiv.style.display = 'block';
             
-            <div class="loading" id="loadingSection">
-                <div class="spinner"></div>
-                <p>正在檢查憑證，請稍候...</p>
-            </div>
-            
-            <div class="results-section" id="resultsSection">
-                <h2>📊 檢查結果 (示範數據)</h2>
-                
-                <div class="summary" id="summaryCards"></div>
-                
-                <table class="results-table" id="resultsTable">
-                    <thead>
-                        <tr>
-                            <th>網站</th>
-                            <th>狀態</th>
-                            <th>剩餘天數</th>
-                            <th>憑證資訊</th>
-                            <th>到期日</th>
-                        </tr>
-                    </thead>
-                    <tbody id="resultsBody"></tbody>
-                </table>
-                
-                <div class="email-section" id="emailSection">
-                    <h3>📧 郵件通知內容</h3>
-                    <p style="margin-bottom: 10px;">請複製以下內容並發送至: <strong id="emailTo"></strong></p>
-                    <p style="margin-bottom: 10px;"><strong>主旨:</strong> <span id="emailSubject"></span></p>
-                    <div class="email-content" id="emailContent"></div>
-                    <div style="text-align: center; margin-top: 15px;">
-                        <button class="btn" onclick="copyEmailContent()">📋 複製郵件內容</button>
-                        <button class="btn btn-secondary" onclick="openGmail()">📧 開啟 Gmail</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="footer">
-            <p><strong>SSL Certificate Monitoring System</strong></p>
-            <p>此網頁版本使用示範數據 | 請使用 PowerShell 版本取得真實憑證資訊</p>
-            <p>© 2025 - Powered by PowerShell & Web Technologies</p>
-        </div>
-    </div>
-    
-    <script>
-        let checkResults = [];
-        
-        function showAlert(message, type = 'info') {
-            const alertBox = document.getElementById('alertBox');
-            alertBox.className = `alert alert-${type} show`;
-            alertBox.textContent = message;
-            
+            // 3秒後自動隱藏
             setTimeout(() => {
-                alertBox.classList.remove('show');
-            }, 5000);
+                statusDiv.style.display = 'none';
+            }, 3000);
         }
-        
-        async function startCheck() {
-            const websitesText = document.getElementById('websites').value.trim();
-            const warningDays = parseInt(document.getElementById('warningDays').value);
-            const emailRecipient = document.getElementById('emailRecipient').value.trim();
-            
-            if (!websitesText) {
-                showAlert('請輸入至少一個網站網址', 'error');
-                return;
-            }
-            
-            if (!emailRecipient) {
-                showAlert('請輸入通知信箱', 'error');
-                return;
-            }
-            
-            const websites = websitesText.split('\n').filter(url => url.trim());
-            
-            document.getElementById('loadingSection').classList.add('active');
-            document.getElementById('resultsSection').style.display = 'none';
-            document.getElementById('emailSection').classList.remove('show');
-            
-            checkResults = [];
-            
-            // 模擬延遲
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            
-            for (const website of websites) {
-                const url = website.trim();
-                if (!url.startsWith('https://')) {
-                    checkResults.push({
-                        url: url,
-                        status: 'ERROR',
-                        daysRemaining: 0,
-                        subject: 'Invalid URL',
-                        issuer: 'N/A',
-                        expiryDate: 'N/A',
-                        validFrom: 'N/A',
-                        error: '網址必須以 https:// 開頭'
-                    });
-                    continue;
-                }
-                
-                try {
-                    const result = await checkSSLCertificate(url, warningDays);
-                    checkResults.push(result);
-                } catch (error) {
-                    checkResults.push({
-                        url: url,
-                        status: 'ERROR',
-                        daysRemaining: 0,
-                        subject: 'Error',
-                        issuer: 'N/A',
-                        expiryDate: 'N/A',
-                        validFrom: 'N/A',
-                        error: error.message
-                    });
-                }
-            }
-            
-            document.getElementById('loadingSection').classList.remove('active');
-            displayResults(warningDays, emailRecipient);
-        }
-        
-        async function checkSSLCertificate(url, warningDays) {
-            // 注意：瀏覽器無法直接取得 SSL 憑證資訊
-            // 這裡使用示範數據
-            const hostname = new URL(url).hostname;
-            const mockData = generateDemoSSLData(url, warningDays);
-            return mockData;
-        }
-        
-        function generateDemoSSLData(url, warningDays) {
-            const hostname = new URL(url).hostname;
-            const now = new Date();
-            
-            // 根據實際情況設定示範數據
-            let daysRemaining, validFrom, issuer;
-            
-            if (hostname.includes('esvc.fnp.gov.tw')) {
-                // esvc 的憑證：2025/5/20 - 2026/5/20
-                validFrom = new Date('2025-05-20');
-                const expiryDate = new Date('2026-05-20');
-                daysRemaining = Math.floor((expiryDate - now) / (1000 * 60 * 60 * 24));
-                issuer = 'HiPKI OV TLS CA - G1 (Chunghwa Telecom)';
-            } else if (hostname.includes('www.fnp.gov.tw')) {
-                // 假設其他網站有正常的憑證
-                validFrom = new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000);
-                const expiryDate = new Date(now.getTime() + 185 * 24 * 60 * 60 * 1000);
-                daysRemaining = 185;
-                issuer = 'Let\'s Encrypt Authority X3';
-            } else if (hostname.includes('pts.fnp.gov.tw')) {
-                validFrom = new Date(now.getTime() - 300 * 24 * 60 * 60 * 1000);
-                const expiryDate = new Date(now.getTime() + 45 * 24 * 60 * 60 * 1000);
-                daysRemaining = 45;
-                issuer = 'DigiCert TLS RSA SHA256 2020 CA1';
-            } else {
-                validFrom = new Date(now.getTime() - 200 * 24 * 60 * 60 * 1000);
-                const expiryDate = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
-                daysRemaining = 90;
-                issuer = 'GeoTrust RSA CA 2018';
-            }
-            
-            const expiryDate = new Date(validFrom.getTime() + 365 * 24 * 60 * 60 * 1000);
-            
-            // 判斷狀態
-            let status;
-            if (now < validFrom) {
-                status = 'FUTURE';  // 憑證尚未生效
-            } else if (daysRemaining <= 0) {
-                status = 'EXPIRED';
-            } else if (daysRemaining <= warningDays) {
-                status = 'WARNING';
-            } else {
-                status = 'OK';
-            }
-            
-            return {
-                url: url,
-                status: status,
-                daysRemaining: daysRemaining,
-                subject: `CN=${hostname}`,
-                issuer: issuer,
-                expiryDate: expiryDate.toISOString().split('T')[0],
-                validFrom: validFrom.toISOString().split('T')[0],
-                hostname: hostname
-            };
-        }
-        
-        function displayResults(warningDays, emailRecipient) {
-            const expiredCount = checkResults.filter(r => r.status === 'EXPIRED').length;
-            const warningCount = checkResults.filter(r => r.status === 'WARNING').length;
-            const okCount = checkResults.filter(r => r.status === 'OK').length;
-            const futureCount = checkResults.filter(r => r.status === 'FUTURE').length;
-            
-            let summaryHtml = `
-                <div class="summary-card card-expired">
-                    <h3>${expiredCount}</h3>
-                    <p>已過期</p>
-                </div>
-                <div class="summary-card card-warning">
-                    <h3>${warningCount}</h3>
-                    <p>即將過期</p>
-                </div>
-                <div class="summary-card card-ok">
-                    <h3>${okCount}</h3>
-                    <p>正常</p>
-                </div>
-            `;
-            
-            if (futureCount > 0) {
-                summaryHtml += `
-                    <div class="summary-card" style="background: linear-gradient(135deg, #5f27cd 0%, #341f97 100%); color: white;">
-                        <h3>${futureCount}</h3>
-                        <p style="color: rgba(255,255,255,0.9);">未生效</p>
-                    </div>
-                `;
-            }
-            
-            document.getElementById('summaryCards').innerHTML = summaryHtml;
-            
-            const tbody = document.getElementById('resultsBody');
-            tbody.innerHTML = '';
-            
-            checkResults.forEach(result => {
-                const row = tbody.insertRow();
-                
-                let statusBadge;
-                switch(result.status) {
-                    case 'EXPIRED':
-                        statusBadge = '<span class="status-badge badge-expired">已過期</span>';
-                        break;
-                    case 'WARNING':
-                        statusBadge = '<span class="status-badge badge-warning">警告</span>';
-                        break;
-                    case 'OK':
-                        statusBadge = '<span class="status-badge badge-ok">正常</span>';
-                        break;
-                    case 'FUTURE':
-                        statusBadge = '<span class="status-badge badge-future">未生效</span>';
-                        break;
-                    default:
-                        statusBadge = '<span class="status-badge badge-error">錯誤</span>';
-                }
-                
-                let daysDisplay = result.daysRemaining;
-                if (result.status === 'FUTURE') {
-                    daysDisplay = `+${Math.abs(result.daysRemaining)} (未來)`;
-                }
-                
-                row.innerHTML = `
-                    <td><strong>${result.url}</strong></td>
-                    <td>${statusBadge}</td>
-                    <td><strong>${daysDisplay}</strong> 天</td>
-                    <td>
-                        <div><strong>${result.subject}</strong></div>
-                        <div style="font-size: 12px; color: #666;">Issuer: ${result.issuer}</div>
-                        <div style="font-size: 11px; color: #999;">生效: ${result.validFrom} | 到期: ${result.expiryDate}</div>
-                    </td>
-                    <td>${result.expiryDate}</td>
-                `;
-                
-                if (result.status === 'EXPIRED') {
-                    row.style.backgroundColor = '#ffcdd2';
-                } else if (result.status === 'WARNING') {
-                    row.style.backgroundColor = '#ffe0b2';
-                } else if (result.status === 'OK') {
-                    row.style.backgroundColor = '#c8e6c9';
-                } else if (result.status === 'FUTURE') {
-                    row.style.backgroundColor = '#e1bee7';
-                }
-            });
-            
-            document.getElementById('resultsSection').style.display = 'block';
-            
-            if (expiredCount > 0 || warningCount > 0 || futureCount > 0) {
-                prepareEmailNotification(expiredCount, warningCount, okCount, futureCount, emailRecipient);
-            }
-            
-            showAlert(`檢查完成！總共 ${checkResults.length} 個網站 (示範數據)`, 'success');
-        }
-        
-        function prepareEmailNotification(expiredCount, warningCount, okCount, futureCount, emailRecipient) {
-            const subject = `[SSL Alert] ${expiredCount} 已過期, ${warningCount} 即將過期, ${futureCount} 未生效`;
-            
-            let bodyLines = [];
-            bodyLines.push('https://wenchenglintw.github.io/ssl-checker/');
-            bodyLines.push('Generated: ' + new Date().toLocaleString('zh-TW'));
-            bodyLines.push('');
-            bodyLines.push('⚠️ 注意：此為示範數據，請使用 PowerShell 版本取得真實資訊');
-            bodyLines.push('');
-            bodyLines.push('Summary:');
-            bodyLines.push(`  Total Sites: ${checkResults.length}`);
-            bodyLines.push(`  Expired: ${expiredCount}`);
-            bodyLines.push(`  Warning: ${warningCount}`);
-            bodyLines.push(`  OK: ${okCount}`);
-            bodyLines.push(`  Future (Not Yet Valid): ${futureCount}`);
-            bodyLines.push('');
-            bodyLines.push('==========================================');
-            bodyLines.push('');
-            
-            const expired = checkResults.filter(r => r.status === 'EXPIRED');
-            if (expired.length > 0) {
-                bodyLines.push('*** EXPIRED CERTIFICATES ***');
-                bodyLines.push('');
-                expired.forEach(cert => {
-                    bodyLines.push(`Website: ${cert.url}`);
-                    bodyLines.push(`Expired: ${cert.expiryDate}`);
-                    bodyLines.push(`Days Overdue: ${Math.abs(cert.daysRemaining)}`);
-                    bodyLines.push(`Subject: ${cert.subject}`);
-                    bodyLines.push(`Issuer: ${cert.issuer}`);
-                    bodyLines.push('');
+
+        // 下載 PowerShell 腳本
+        function downloadPowerShellScript() {
+            try {
+                // 使用 Blob 創建檔案
+                const blob = new Blob([scriptContent], { 
+                    type: 'text/plain;charset=utf-8' 
                 });
+                
+                // 創建下載連結
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'Check-SSLCertificates.ps1';
+                link.style.display = 'none';
+                
+                // 添加到頁面並觸發下載
+                document.body.appendChild(link);
+                link.click();
+                
+                // 清理
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                
+                showStatus('✅ PowerShell 腳本下載成功！', 'success');
+                
+            } catch (error) {
+                console.error('Download failed:', error);
+                showStatus('❌ 下載失敗，請嘗試複製腳本內容', 'error');
+                
+                // 備用方案：開啟新視窗顯示內容
+                setTimeout(() => {
+                    openScriptModal();
+                }, 1000);
             }
-            
-            const warnings = checkResults.filter(r => r.status === 'WARNING');
-            if (warnings.length > 0) {
-                bodyLines.push('*** 警告 - 憑證即將到期 ***');
-                bodyLines.push('');
-                warnings.forEach(cert => {
-                    bodyLines.push(`Website: ${cert.url}`);
-                    bodyLines.push(`Expires: ${cert.expiryDate}`);
-                    bodyLines.push(`Days Remaining: ${cert.daysRemaining}`);
-                    bodyLines.push(`Subject: ${cert.subject}`);
-                    bodyLines.push(`Issuer: ${cert.issuer}`);
-                    bodyLines.push('');
+        }
+
+        // 複製腳本內容到剪貼簿
+        function copyScriptContent() {
+            try {
+                navigator.clipboard.writeText(scriptContent).then(() => {
+                    showStatus('✅ 腳本內容已複製到剪貼簿！', 'success');
+                }).catch(() => {
+                    // 備用複製方法
+                    fallbackCopyTextToClipboard(scriptContent);
                 });
+            } catch (error) {
+                fallbackCopyTextToClipboard(scriptContent);
             }
-            
-            const futures = checkResults.filter(r => r.status === 'FUTURE');
-            if (futures.length > 0) {
-                bodyLines.push('*** FUTURE - NOT YET VALID ***');
-                bodyLines.push('');
-                futures.forEach(cert => {
-                    bodyLines.push(`Website: ${cert.url}`);
-                    bodyLines.push(`Valid From: ${cert.validFrom}`);
-                    bodyLines.push(`Days Until Valid: ${Math.abs(cert.daysRemaining)}`);
-                    bodyLines.push(`Subject: ${cert.subject}`);
-                    bodyLines.push(`Issuer: ${cert.issuer}`);
-                    bodyLines.push('');
-                });
+        }
+
+        // 備用複製方法
+        function fallbackCopyTextToClipboard(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.position = "fixed";
+            textArea.style.opacity = "0";
+
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showStatus('✅ 腳本內容已複製到剪貼簿！', 'success');
+                } else {
+                    showStatus('❌ 複製失敗，請手動複製', 'error');
+                    openScriptModal();
+                }
+            } catch (err) {
+                showStatus('❌ 複製失敗，請手動複製', 'error');
+                openScriptModal();
             }
+
+            document.body.removeChild(textArea);
+        }
+
+        // 開啟腳本內容模態框
+        function openScriptModal() {
+            const modal = document.getElementById('scriptModal');
+            const textarea = document.getElementById('scriptTextarea');
+            textarea.value = scriptContent;
+            modal.style.display = 'block';
+        }
+
+        // 關閉腳本內容模態框
+        function closeScriptModal() {
+            document.getElementById('scriptModal').style.display = 'none';
+        }
+
+        // 從文字區域複製
+        function copyFromTextarea() {
+            const textarea = document.getElementById('scriptTextarea');
+            textarea.select();
+            textarea.setSelectionRange(0, 99999); // 對於行動裝置
             
-            const oks = checkResults.filter(r => r.status === 'OK');
-            if (oks.length > 0) {
-                bodyLines.push('*** OK - VALID CERTIFICATES ***');
-                bodyLines.push('');
-                oks.forEach(cert => {
-                    bodyLines.push(` ${cert.url} - Valid for ${cert.daysRemaining} days`);
-                });
-                bodyLines.push('');
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showStatus('✅ 腳本內容已複製到剪貼簿！', 'success');
+                    closeScriptModal();
+                } else {
+                    showStatus('❌ 複製失敗，請手動選取並複製', 'error');
+                }
+            } catch (err) {
+                showStatus('❌ 複製失敗，請手動選取並複製', 'error');
             }
-            
-            bodyLines.push('==========================================');
-            bodyLines.push('');
-            bodyLines.push('This is an automated message with DEMO DATA.');
-            bodyLines.push('Please use PowerShell version for real certificate information.');
-            
-            const body = bodyLines.join('\n');
-            
-            document.getElementById('emailTo').textContent = emailRecipient;
-            document.getElementById('emailSubject').textContent = subject;
-            document.getElementById('emailContent').textContent = body;
-            document.getElementById('emailSection').classList.add('show');
-            
-            window.emailData = {
-                to: emailRecipient,
-                subject: subject,
-                body: body
-            };
         }
-        
-        function copyEmailContent() {
-            const content = document.getElementById('emailContent').textContent;
-            
-            navigator.clipboard.writeText(content).then(() => {
-                showAlert('✓ 郵件內容已複製到剪貼簿！', 'success');
-            }).catch(err => {
-                showAlert('複製失敗，請手動選取並複製', 'error');
-            });
-        }
-        
-        function openGmail() {
-            if (!window.emailData) {
-                showAlert('請先執行檢查', 'error');
-                return;
+
+        // 點擊模態框外部關閉
+        window.onclick = function(event) {
+            const modal = document.getElementById('scriptModal');
+            if (event.target === modal) {
+                closeScriptModal();
             }
-            
-            const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(window.emailData.to)}&su=${encodeURIComponent(window.emailData.subject)}&body=${encodeURIComponent(window.emailData.body)}`;
-            
-            window.open(gmailUrl, '_blank');
         }
-        
-        function resetForm() {
-            document.getElementById('websites').value = 'https://esvc.fnp.gov.tw/\nhttps://www.fnp.gov.tw/\nhttps://webjop.fnp.gov.tw/\nhttps://pts.fnp.gov.tw/APNPA/\nhttps://pms.fnp.gov.tw/\nhttps://iesextmail1.fnp.gov.tw/';
-            document.getElementById('warningDays').value = '60';
-            document.getElementById('emailRecipient').value = '';
-            document.getElementById('resultsSection').style.display = 'none';
-            document.getElementById('emailSection').classList.remove('show');
-            checkResults = [];
-            showAlert('表單已重設', 'info');
-        }
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('SSL Certificate Checker loaded - Demo Mode');
+
+        // ESC 鍵關閉模態框
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeScriptModal();
+            }
         });
     </script>
-   </body>
+</body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
