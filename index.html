@@ -415,12 +415,7 @@
                 
                 <div class="form-group">
                     <label for="websites">網站清單 (每行一個網址)</label>
-                    <textarea id="websites" placeholder="https://example.com&#10;https://www.google.com&#10;https://www.microsoft.com">https://esvc.fnp.gov.tw/
-https://www.fnp.gov.tw/
-https://webjop.fnp.gov.tw/
-https://pts.fnp.gov.tw/APNPA/
-https://pms.fnp.gov.tw/
-https://iesextmail1.fnp.gov.tw/
+                    <textarea id="websites" placeholder="https://example.com&#10;https://www.google.com&#10;https://www.microsoft.com">https://esvc.fnp.gov.tw/\nhttps://www.fnp.gov.tw/\nhttps://webjop.fnp.gov.tw/\nhttps://pts.fnp.gov.tw/APNPA/\nhttps://pms.fnp.gov.tw/\nhttps://iesextmail1.fnp.gov.tw/
                     </textarea>
                     <small>請輸入完整的 HTTPS 網址，每行一個</small>
                 </div>
@@ -433,7 +428,7 @@ https://iesextmail1.fnp.gov.tw/
                 
                 <div class="form-group">
                     <label for="emailRecipient">通知信箱</label>
-                    <input type="email" id="emailRecipient"  placeholder="your@email.com">
+                    <input type="email" id="emailRecipient" value="XXX@gmail.com" placeholder="your@email.com">
                     <small>當有憑證過期或即將過期時，會準備郵件通知</small>
                 </div>
                 
@@ -450,431 +445,7 @@ https://iesextmail1.fnp.gov.tw/
                     <h4 style="color: #1976D2; margin-bottom: 10px;">💡 如何取得真實憑證資訊？</h4>
                     <p style="color: #555; font-size: 14px; line-height: 1.6;">
                         <strong>方法 1：使用 PowerShell 腳本</strong><br>
-                        執行隨附的 PowerShell 腳本可取得真實憑證資訊<br>
-                         // 修正版本的下載功能
-function downloadPowerShellScript() {
-    const scriptContent = `# SSL Certificate Check Script
-# ==================== Configuration ====================
-
-$websiteList = @(
-    "https://esvc.fnp.gov.tw/",
-    "https://www.fnp.gov.tw/",
-    "https://webjop.fnp.gov.tw/",
-    "https://pts.fnp.gov.tw/APNPA/",
-    "https://pms.fnp.gov.tw/",
-    "https://iesextmail1.fnp.gov.tw/"
-)
-$emailRecipient = "wencheng.tw@gmail.com"
-$warningDays = 60
-
-# 設定工作目錄
-if ($PSScriptRoot) {
-    $workingDir = $PSScriptRoot
-} else {
-    $workingDir = "D:\\chkCRT"
-    if (-not (Test-Path $workingDir)) {
-        New-Item -ItemType Directory -Path $workingDir -Force | Out-Null
-    }
-}
-
-Write-Host "Working Directory: $workingDir" -ForegroundColor Gray
-
-# ==================== Functions ====================
-
-function Send-EmailViaOutlook {
-    param (
-        [string]$To,
-        [string]$Subject,
-        [string]$Body
-    )
-    
-    try {
-        Write-Host "Attempting to send email via Outlook..." -ForegroundColor Gray
-        
-        $outlook = New-Object -ComObject Outlook.Application
-        $mail = $outlook.CreateItem(0)
-        
-        $mail.To = $To
-        $mail.Subject = $Subject
-        $mail.Body = $Body
-        
-        $mail.Send()
-        
-        Write-Host "Success: Email sent via Outlook!" -ForegroundColor Green
-        
-        [System.Runtime.InteropServices.Marshal]::ReleaseComObject($mail) | Out-Null
-        [System.Runtime.InteropServices.Marshal]::ReleaseComObject($outlook) | Out-Null
-        [System.GC]::Collect()
-        [System.GC]::WaitForPendingFinalizers()
-        
-        return $true
-    }
-    catch {
-        Write-Host "Failed to send via Outlook: $($_.Exception.Message)" -ForegroundColor Red
-        return $false
-    }
-}
-
-function Get-CertificateInfo {
-    param ([string]$Url)
-    
-    try {
-        $uri = [System.Uri]$Url
-        $hostname = $uri.Host
-        $port = if ($uri.Port -eq -1) { 443 } else { $uri.Port }
-        
-        Write-Host "  Connecting to \${hostname}:\${port}..." -ForegroundColor Gray
-        
-        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13
-        
-        $request = [Net.HttpWebRequest]::Create($Url)
-        $request.Timeout = 10000
-        $request.AllowAutoRedirect = $false
-        $request.Method = "HEAD"
-        
-        try {
-            $response = $request.GetResponse()
-            $response.Close()
-        }
-        catch {
-            # Ignore HTTP errors, we only need the certificate
-        }
-        
-        $certificate = $request.ServicePoint.Certificate
-        
-        if ($null -eq $certificate) {
-            throw "Unable to retrieve certificate"
-        }
-        
-        $cert2 = [System.Security.Cryptography.X509Certificates.X509Certificate2]$certificate
-        
-        $currentDate = Get-Date
-        $expiryDate = $cert2.NotAfter
-        $daysRemaining = [math]::Floor(($expiryDate - $currentDate).TotalDays)
-        
-        $certInfo = [PSCustomObject]@{
-            Url = $Url
-            Subject = $cert2.Subject
-            Issuer = $cert2.Issuer
-            NotBefore = $cert2.NotBefore
-            NotAfter = $cert2.NotAfter
-            Thumbprint = $cert2.Thumbprint
-            SerialNumber = $cert2.SerialNumber
-            DaysRemaining = $daysRemaining
-            Hostname = $hostname
-            SignatureAlgorithm = $cert2.SignatureAlgorithm.FriendlyName
-        }
-        
-        return $certInfo
-    }
-    catch {
-        throw
-    }
-}
-
-function Save-EmailToFile {
-    param (
-        [string]$To,
-        [string]$Subject,
-        [string]$Body,
-        [string]$FilePath
-    )
-    
-    $fileContent = @"
-===============================================
-Email Notification (Auto-generated)
-===============================================
-
-To: $To
-Subject: $Subject
-Generated: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
-
------------------------------------------------
-Message Body:
------------------------------------------------
-
-$Body
-
-===============================================
-Please copy the above content and send it manually.
-===============================================
-"@
-    
-    try {
-        [System.IO.File]::WriteAllText($FilePath, $fileContent, [System.Text.Encoding]::UTF8)
-        Write-Host "Email content saved to: $FilePath" -ForegroundColor Green
-        return $true
-    }
-    catch {
-        Write-Host "Failed to save email file: $($_.Exception.Message)" -ForegroundColor Red
-        return $false
-    }
-}
-
-# ==================== Main Execution ====================
-
-Write-Host ""
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "SSL Certificate Check - Multiple Sites" -ForegroundColor Cyan
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "Working Directory: $workingDir" -ForegroundColor Gray
-Write-Host "Total sites to check: $($websiteList.Count)" -ForegroundColor Gray
-Write-Host "Warning threshold: $warningDays days" -ForegroundColor Gray
-Write-Host ""
-
-$allResults = @()
-
-# Check all websites
-foreach ($website in $websiteList) {
-    try {
-        Write-Host "Checking: $website" -ForegroundColor Yellow
-        $certInfo = Get-CertificateInfo -Url $website
-        
-        Write-Host "  Subject: $($certInfo.Subject)" -ForegroundColor Green
-        Write-Host "  Issuer: $($certInfo.Issuer)" -ForegroundColor Green
-        Write-Host "  Expiry: $($certInfo.NotAfter.ToString('yyyy-MM-dd HH:mm:ss'))" -ForegroundColor Green
-        Write-Host "  Days Remaining: $($certInfo.DaysRemaining)" -ForegroundColor $(if($certInfo.DaysRemaining -le $warningDays){'Yellow'}else{'Green'})
-        
-        if ($certInfo.DaysRemaining -le 0) {
-            $certInfo | Add-Member -NotePropertyName "Status" -NotePropertyValue "EXPIRED" -Force
-            Write-Host "  Status: EXPIRED" -ForegroundColor Red
-        }
-        elseif ($certInfo.DaysRemaining -le $warningDays) {
-            $certInfo | Add-Member -NotePropertyName "Status" -NotePropertyValue "WARNING" -Force
-            Write-Host "  Status: WARNING" -ForegroundColor Yellow
-        }
-        else {
-            $certInfo | Add-Member -NotePropertyName "Status" -NotePropertyValue "OK" -Force
-            Write-Host "  Status: OK" -ForegroundColor Green
-        }
-        
-        $allResults += $certInfo
-        Write-Host ""
-    }
-    catch {
-        Write-Host "  Error: $($_.Exception.Message)" -ForegroundColor Red
-        
-        $errorInfo = [PSCustomObject]@{
-            Url = $website
-            Subject = "ERROR"
-            Issuer = "N/A"
-            NotBefore = Get-Date
-            NotAfter = Get-Date
-            Thumbprint = "N/A"
-            SerialNumber = "N/A"
-            DaysRemaining = -999
-            Hostname = "N/A"
-            SignatureAlgorithm = "N/A"
-            Status = "ERROR"
-            ErrorMessage = $_.Exception.Message
-        }
-        
-        $allResults += $errorInfo
-        Write-Host ""
-    }
-    
-    Start-Sleep -Seconds 1
-}
-
-# Summary
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "Summary:" -ForegroundColor Cyan
-Write-Host "  Total Sites: $($allResults.Count)" -ForegroundColor White
-Write-Host "  Expired: $(($allResults | Where-Object { $_.Status -eq 'EXPIRED' }).Count)" -ForegroundColor Red
-Write-Host "  Warning: $(($allResults | Where-Object { $_.Status -eq 'WARNING' }).Count)" -ForegroundColor Yellow
-Write-Host "  OK: $(($allResults | Where-Object { $_.Status -eq 'OK' }).Count)" -ForegroundColor Green
-Write-Host "  Errors: $(($allResults | Where-Object { $_.Status -eq 'ERROR' }).Count)" -ForegroundColor Magenta
-Write-Host "========================================" -ForegroundColor Cyan
-
-# Prepare email if needed
-$needsAlert = $allResults | Where-Object { $_.Status -eq "WARNING" -or $_.Status -eq "EXPIRED" }
-
-if ($needsAlert.Count -gt 0) {
-    Write-Host ""
-    Write-Host "Alert: Found $($needsAlert.Count) certificate(s) requiring attention!" -ForegroundColor Yellow
-    
-    $expiredCount = ($allResults | Where-Object { $_.Status -eq "EXPIRED" }).Count
-    $warningCount = ($allResults | Where-Object { $_.Status -eq "WARNING" }).Count
-    $okCount = ($allResults | Where-Object { $_.Status -eq "OK" }).Count
-    
-    $subject = "[SSL Certificate Alert] $expiredCount Expired, $warningCount Warning"
-    
-    $bodyLines = @()
-    $bodyLines += "SSL Certificate Check Report"
-    $bodyLines += "========================================"
-    $bodyLines += "Generated at: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-    $bodyLines += ""
-    $bodyLines += "Summary:"
-    $bodyLines += "  Total Sites Checked: $($allResults.Count)"
-    $bodyLines += "  Expired: $expiredCount"
-    $bodyLines += "  Warning (< $warningDays days): $warningCount"
-    $bodyLines += "  OK: $okCount"
-    $bodyLines += ""
-    $bodyLines += "========================================"
-    $bodyLines += "Detailed Results:"
-    $bodyLines += "========================================"
-    $bodyLines += ""
-    
-    $expired = $allResults | Where-Object { $_.Status -eq "EXPIRED" }
-    if ($expired.Count -gt 0) {
-        $bodyLines += ""
-        $bodyLines += "*** EXPIRED CERTIFICATES ***"
-        $bodyLines += ""
-        foreach ($cert in $expired) {
-            $bodyLines += "Website: $($cert.Url)"
-            $bodyLines += "Subject: $($cert.Subject)"
-            $bodyLines += "Expired Date: $($cert.NotAfter.ToString('yyyy-MM-dd HH:mm:ss'))"
-            $bodyLines += "Days Overdue: $([math]::Abs($cert.DaysRemaining))"
-            $bodyLines += "Thumbprint: $($cert.Thumbprint)"
-            $bodyLines += "----------------------------------------"
-            $bodyLines += ""
-        }
-    }
-    
-    $warnings = $allResults | Where-Object { $_.Status -eq "WARNING" }
-    if ($warnings.Count -gt 0) {
-        $bodyLines += ""
-        $bodyLines += "*** WARNING - EXPIRING SOON ***"
-        $bodyLines += ""
-        foreach ($cert in $warnings) {
-            $bodyLines += "Website: $($cert.Url)"
-            $bodyLines += "Subject: $($cert.Subject)"
-            $bodyLines += "Issuer: $($cert.Issuer)"
-            $bodyLines += "Expiry Date: $($cert.NotAfter.ToString('yyyy-MM-dd HH:mm:ss'))"
-            $bodyLines += "Days Remaining: $($cert.DaysRemaining)"
-            $bodyLines += "Thumbprint: $($cert.Thumbprint)"
-            $bodyLines += "----------------------------------------"
-            $bodyLines += ""
-        }
-    }
-    
-    $oks = $allResults | Where-Object { $_.Status -eq "OK" }
-    if ($oks.Count -gt 0) {
-        $bodyLines += ""
-        $bodyLines += "*** OK - VALID CERTIFICATES ***"
-        $bodyLines += ""
-        foreach ($cert in $oks) {
-            $bodyLines += "Website: $($cert.Url) - Days Remaining: $($cert.DaysRemaining)"
-        }
-    }
-    
-    $bodyLines += ""
-    $bodyLines += ""
-    $bodyLines += "========================================"
-    $bodyLines += "This is an automated message."
-    $bodyLines += "========================================"
-    
-    $body = $bodyLines -join "\`n"
-    
-    Write-Host ""
-    Write-Host "Attempting to send email notification..." -ForegroundColor Yellow
-    $emailSent = Send-EmailViaOutlook -To $emailRecipient -Subject $subject -Body $body
-    
-    if (-not $emailSent) {
-        Write-Host ""
-        Write-Host "Outlook not available. Saving email content to file..." -ForegroundColor Yellow
-        $emailFile = Join-Path $workingDir "email_notification_$(Get-Date -Format 'yyyyMMdd_HHmmss').txt"
-        Save-EmailToFile -To $emailRecipient -Subject $subject -Body $body -FilePath $emailFile
-        
-        try {
-            Start-Process notepad.exe $emailFile
-        }
-        catch {
-            Write-Host "Please manually open: $emailFile" -ForegroundColor Yellow
-        }
-    }
-}
-else {
-    Write-Host ""
-    Write-Host "All certificates are OK - no alert needed" -ForegroundColor Green
-}
-
-# Export to CSV
-Write-Host ""
-Write-Host "Exporting results..." -ForegroundColor Gray
-$csvFile = Join-Path $workingDir "ssl_check_results_$(Get-Date -Format 'yyyyMMdd_HHmmss').csv"
-
-try {
-    $allResults | Select-Object Url, Status, DaysRemaining, Subject, Issuer, 
-                                @{Name="ExpiryDate";Expression={$_.NotAfter.ToString('yyyy-MM-dd HH:mm:ss')}},
-                                @{Name="ValidFrom";Expression={$_.NotBefore.ToString('yyyy-MM-dd HH:mm:ss')}},
-                                Thumbprint, SerialNumber |
-                Export-Csv -Path $csvFile -NoTypeInformation -Encoding UTF8
-    
-    Write-Host "CSV exported to: $csvFile" -ForegroundColor Green
-}
-catch {
-    Write-Host "Failed to export CSV: $($_.Exception.Message)" -ForegroundColor Red
-}
-
-# Save log
-$logFile = Join-Path $workingDir "ssl_check_log.txt"
-$logEntry = "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') | Checked: $($allResults.Count) | Expired: $(($allResults | Where-Object { $_.Status -eq 'EXPIRED' }).Count) | Warning: $(($allResults | Where-Object { $_.Status -eq 'WARNING' }).Count) | OK: $(($allResults | Where-Object { $_.Status -eq 'OK' }).Count)"
-
-try {
-    Add-Content -Path $logFile -Value $logEntry -Encoding UTF8
-    Write-Host "Log saved to: $logFile" -ForegroundColor Green
-}
-catch {
-    Write-Host "Failed to save log: $($_.Exception.Message)" -ForegroundColor Red
-}
-
-Write-Host ""
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "Script completed successfully!" -ForegroundColor Green
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host ""`;
-
-    try {
-        // 使用 Blob 方式創建檔案
-        const blob = new Blob([scriptContent], { 
-            type: 'text/plain;charset=utf-8' 
-        });
-        
-        // 創建下載連結
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'Check-SSLCertificates.ps1';
-        
-        // 觸發下載
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        // 清理 URL
-        window.URL.revokeObjectURL(url);
-        
-        console.log('PowerShell script downloaded successfully');
-        
-    } catch (error) {
-        console.error('Download failed:', error);
-        
-        // 備用方案：顯示內容讓用戶複製
-        const newWindow = window.open('', '_blank');
-        newWindow.document.write(`
-            <html>
-            <head>
-                <title>PowerShell Script - 請複製內容</title>
-                <style>
-                    body { font-family: monospace; margin: 20px; }
-                    textarea { width: 100%; height: 80vh; font-family: monospace; }
-                    .header { background: #f0f0f0; padding: 10px; margin-bottom: 10px; }
-                </style>
-            </head>
-            <body>
-                <div class="header">
-                    <h3>下載失敗 - 請複製以下內容並儲存為 Check-SSLCertificates.ps1</h3>
-                    <p>請選擇全部內容 (Ctrl+A) 然後複製 (Ctrl+C)</p>
-                </div>
-                <textarea readonly>${scriptContent}</textarea>
-            </body>
-            </html>
-        `);
-    }
-}
-
-                        <br>
+                        執行隨附的 PowerShell 腳本可取得真實憑證資訊<br><br>
                         <strong>方法 2：使用線上工具</strong><br>
                         • <a href="https://www.ssllabs.com/ssltest/" target="_blank">SSL Labs</a><br>
                         • <a href="https://www.sslshopper.com/ssl-checker.html" target="_blank">SSL Shopper</a>
@@ -1225,7 +796,7 @@ Write-Host ""`;
                 bodyLines.push('*** OK - VALID CERTIFICATES ***');
                 bodyLines.push('');
                 oks.forEach(cert => {
-                    bodyLines.push(` ${cert.url} - Valid for ${cert.daysRemaining} days`);
+                    bodyLines.push(` - Valid for ${cert.daysRemaining} days`);
                 });
                 bodyLines.push('');
             }
@@ -1273,7 +844,7 @@ Write-Host ""`;
         function resetForm() {
             document.getElementById('websites').value = 'https://esvc.fnp.gov.tw/\nhttps://www.fnp.gov.tw/\nhttps://webjop.fnp.gov.tw/\nhttps://pts.fnp.gov.tw/APNPA/\nhttps://pms.fnp.gov.tw/\nhttps://iesextmail1.fnp.gov.tw/';
             document.getElementById('warningDays').value = '60';
-            document.getElementById('emailRecipient').value = '';
+            document.getElementById('emailRecipient').value = 'xxx@gmail.com';
             document.getElementById('resultsSection').style.display = 'none';
             document.getElementById('emailSection').classList.remove('show');
             checkResults = [];
@@ -1284,14 +855,8 @@ Write-Host ""`;
             console.log('SSL Certificate Checker loaded - Demo Mode');
         });
     </script>
-   </body>
+</body>
 </html>
-
-
-
-
-
-
 
 
 
