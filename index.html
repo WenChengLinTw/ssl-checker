@@ -767,7 +767,7 @@ https://pms.fnp.gov.tw/</textarea>
             
             const warnings = checkResults.filter(r => r.status === 'WARNING');
             if (warnings.length > 0) {
-                bodyLines.push('*** WARNING - EXPIRING SOON ***');
+                bodyLines.push('*** 警告 - 憑證即將到期 ***');
                 bodyLines.push('');
                 warnings.forEach(cert => {
                     bodyLines.push(`Website: ${cert.url}`);
@@ -859,5 +859,6 @@ https://pms.fnp.gov.tw/</textarea>
     </script>
 </body>
 </html>
+
 
 
