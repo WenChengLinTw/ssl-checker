@@ -433,7 +433,7 @@ https://iesextmail1.fnp.gov.tw/
                 
                 <div class="form-group">
                     <label for="emailRecipient">通知信箱</label>
-                    <input type="email" id="emailRecipient" value="XXX@gmail.com" placeholder="your@email.com">
+                    <input type="email" id="emailRecipient"  placeholder="your@email.com">
                     <small>當有憑證過期或即將過期時，會準備郵件通知</small>
                 </div>
                 
@@ -849,7 +849,7 @@ https://iesextmail1.fnp.gov.tw/
         function resetForm() {
             document.getElementById('websites').value = 'https://esvc.fnp.gov.tw/\nhttps://www.fnp.gov.tw/\nhttps://webjop.fnp.gov.tw/\nhttps://pts.fnp.gov.tw/APNPA/\nhttps://pms.fnp.gov.tw/\nhttps://iesextmail1.fnp.gov.tw/';
             document.getElementById('warningDays').value = '60';
-            document.getElementById('emailRecipient').value = 'xxx@gmail.com';
+            document.getElementById('emailRecipient').value = '';
             document.getElementById('resultsSection').style.display = 'none';
             document.getElementById('emailSection').classList.remove('show');
             checkResults = [];
@@ -862,6 +862,7 @@ https://iesextmail1.fnp.gov.tw/
     </script>
 </body>
 </html>
+
 
 
 
