@@ -549,6 +549,14 @@ https://iesextmail1.fnp.gov.tw/</textarea>
             <div class="usage-section">
                 <h2>📖 使用說明</h2>
                 <div class="usage-steps">
+                    <!-- 在使用說明中加入執行原則處理步驟 -->
+<div class="usage-step">
+    <h3>處理執行原則限制</h3>
+    <p>如果遇到「檔案未經數位簽署」錯誤，請先執行：<br>
+    <code>Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process</code><br>
+    這會臨時允許執行腳本，不會影響系統安全設定。</p>
+</div>
+
                     <div class="usage-step">
                         <h3>設定檢查參數</h3>
                         <p>在上方表單中填入要檢查的網站清單、警告天數和郵件地址。</p>
@@ -1175,3 +1183,4 @@ $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")`;
     </script>
 </body>
 </html>
+
